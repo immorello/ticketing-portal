@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Creates ticket-tool Resources
+Parameters:
+  CognitoUserPoolName:
+    Type: String
+  DynamoDbTicketsTableName:
+    Type: String
+  DynamoDbMessagesTableName:
+    Type: String
+  TicketsHandlingLambdaName:
+    Type: String
+  UsersHandlingLambdaName:
+    Type: String
+Resources:
+  #Cognito User Pool
+  TicketToolUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UsernameAttributes: 
+        - email
+      UserPoolName: !Ref CognitoUserPoolName
+  #User Pool app client
+  AngularAppClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+        UserPoolId: !Ref TicketToolUserPool
+        GenerateSecret: false
+        ExplicitAuthFlows:
+            - ALLOW_USER_PASSWORD_AUTH
+            - ALLOW_REFRESH_TOKEN_AUTH
+            - ALLOW_USER_SRP_AUTH
+        ClientName: ticketTool
+  #Admin group
+  AdmingGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      Description: Admins of the ticketing tool
+      GroupName: Admins
+      UserPoolId: !Ref TicketToolUserPool
+  #Tickets table
+  TicketingToolTicketsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DynamoDbTicketsTableName
+      AttributeDefinitions:
+        - AttributeName: ticket_uuid
+          AttributeType: S
+        - AttributeName: assignment_group
+          AttributeType: S
+        - AttributeName: assigned_to
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ticket_uuid
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        - IndexName: assignment_group-index
+          KeySchema:
+            - AttributeName: assignment_group
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        - IndexName: assigned_to-index
+          KeySchema:
+            - AttributeName: assigned_to
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5    
+  #Tickets Messagges table
+  TicketingToolMessaggesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DynamoDbMessagesTableName
+      AttributeDefinitions:
+        - AttributeName: messagge_uuid
+          AttributeType: S
+        - AttributeName: author
+          AttributeType: S
+      KeySchema:
+        - AttributeName: messagge_uuid
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        - IndexName: author-index
+          KeySchema:
+            - AttributeName: author
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+  #TicketsHanglindLambda
+  TicketsHandlingLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/Lambdas/ticketsHandlingLambda
+      Description: Lambda that manages the tickets of ticketing tool
+      Environment:
+        Variables:
+          ticket_table: !Ref DynamoDbTicketsTableName
+          messagges_table: !Ref DynamoDbMessagesTableName
+      FunctionName: !Ref TicketsHandlingLambdaName
+      Handler: main.lambda_handler
+      Runtime: python3.12
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoDbTicketsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoDbMessagesTableName
+  #UsersHandlingLambda
+  UsersHandlingLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/Lambdas/usersHandlingLambda
+      Description: Lambda that manages the users of ticketing tool
+      Environment:
+        Variables:
+          user_pool_name: !Ref CognitoUserPoolName
+      FunctionName: !Ref UsersHandlingLambdaName
+      Handler: main.lambda_handler
+      Runtime: python3.12
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'cognito-idp:CreateGroup'
+                - 'cognito-idp:GetGroup'
+                - 'cognito-idp:AdminAddUserToGroup'
+                - 'cognito-idp:AdminCreateUser'
+                - 'cognito-idp:ListGroups'
+                - 'cognito-idp:ListUsers'
+                - 'cognito-idp:AdminGetUser'
+              Resource: !GetAtt TicketToolUserPool.Arn

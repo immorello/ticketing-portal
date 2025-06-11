@@ -1,0 +1,47 @@
+<div class="container text-center mt-5">
+  <div class="row align-items-start">
+    <div class="col"><!-- One of three columns --></div>
+    <div class="col">
+      <div class="mt-5">
+        <h3>Login:</h3>
+      </div>
+      <form>
+      <div class="mt-5 p-3">
+        <label for="emailAddress" class="form-label"
+          >Email address</label
+        >
+        <input
+          type="email"
+          class="form-control mt-3"
+          id="emailAddress"
+          name="emailAddress"
+          autocomplete="on"
+          placeholder="name@example.com"
+          [(ngModel)]="email"
+          (keydown)="clearFields()"
+        />
+      </div>
+      <div class="mb-3">
+        <label for="loginPassword" class="form-label"
+          >Password</label
+        >
+        <input
+        [class]="isThereAnError ? 'form-control mt-3 is-invalid' : 'form-control mt-3'"
+          type="password"
+          name="password"
+          autocomplete="on"
+          id="loginPassword"
+          [(ngModel)]="password"
+          (keydown)="clearFields()"
+          (keydown.enter)="login()"
+        />
+        <div id="passwordMatchFeedback" class="invalid-feedback">
+            {{ errorMessage }}
+          </div>
+      </div>
+      <button type="button" class="btn btn-danger mt-3" (click)="login()" >Login</button>
+      </form>
+    </div>
+    <div class="col"><!-- One of three columns --></div>
+  </div>
+</div>

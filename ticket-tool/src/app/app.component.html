@@ -1,0 +1,58 @@
+
+<nav
+  class="navbar navbar-expand-lg bg-dark border-bottom border-body"
+  data-bs-theme="dark"
+>
+  <div class="container-fluid">
+    <a class="navbar-brand" routerLink="/dashboard"
+      ><img
+        src="assets/ritaLogo.png"
+        style="width: 10vw"
+        alt="logo immergas"
+    /></a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div
+      [class]="
+        isLoggedIn
+          ? 'collapse navbar-collapse'
+          : 'collapse navbar-collapse invisible'
+      "
+      id="navbarSupportedContent"
+    >
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          
+          <a class="nav-link" routerLink="/dashboard" aria-current="page">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="">Apri segnalazione</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="">Lista segnalazioni</a>
+        </li>
+        <li [class]="isAdmin ? 'nav-item' : 'nav-item invisible'">
+          <a routerLink="/groups" class="nav-link" aria-current="page">Gruppi</a>
+        </li>
+        <li [class]="isAdmin ? 'nav-item' : 'nav-item invisible'">
+          <a class="nav-link" href="">Utenti</a>
+        </li>
+      </ul>
+      <form class="d-flex">
+        <button class="btn btn-outline-danger" type="submit" (click)="logOut()">
+          Logout
+        </button>
+      </form>
+    </div>
+  </div>
+</nav>
+<router-outlet></router-outlet>
