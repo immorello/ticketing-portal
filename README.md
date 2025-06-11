@@ -2,7 +2,7 @@
 This repository contains the backend and frontend infrastructure of the Ticket Tool Portal, provisioned using AWS CloudFormation. It is designed to support the Angular-based frontend by providing secure, scalable AWS resources and APIs.
 
 ## Overview
-The backend is defined via infrastructure-as-code using the CloudFormation template:
+The backend is defined via infrastructure-as-code using the CloudFormation template. The supporting Lambda are still to be written:
 ticket-tool-backend/template.yaml
 
 The frontend is still work in progress but it has functioning code for the realization of a portal with authentication. 
